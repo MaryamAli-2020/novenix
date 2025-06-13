@@ -1,0 +1,99 @@
+/* Progress bar styles */
+.progress-bar-container {
+  position: relative;
+  height: 0.75rem;
+  background-color: rgb(241 245 249);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.dark .progress-bar-container {
+  background-color: rgba(51, 65, 85, 0.5);
+}
+
+.story-progress-bar {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: var(--progress);
+  transition: width 0.5s ease-in-out;
+}
+
+.story-progress-bar.progress-emerald {
+  background: linear-gradient(to right, rgb(16 185 129), rgb(5 150 105));
+}
+
+.story-progress-bar.progress-indigo {
+  background: linear-gradient(to right, rgb(99 102 241), rgb(79 70 229));
+}
+
+.story-progress-bar.progress-amber {
+  background: linear-gradient(to right, rgb(245 158 11), rgb(217 119 6));
+}
+
+.story-progress-bar.progress-blue {
+  background: linear-gradient(to right, rgb(59 130 246), rgb(37 99 235));
+}
+
+.story-progress-bar.progress-slate {
+  background: linear-gradient(to right, rgb(100 116 139), rgb(71 85 105));
+}
+
+.dark .story-progress-bar.progress-emerald {
+  background: linear-gradient(to right, rgb(5 150 105), rgb(4 120 87));
+}
+
+.dark .story-progress-bar.progress-indigo {
+  background: linear-gradient(to right, rgb(129 140 248), rgb(99 102 241));
+}
+
+.dark .story-progress-bar.progress-amber {
+  background: linear-gradient(to right, rgb(251 191 36), rgb(245 158 11));
+}
+
+.dark .story-progress-bar.progress-blue {
+  background: linear-gradient(to right, rgb(96 165 250), rgb(59 130 246));
+}
+
+.dark .story-progress-bar.progress-slate {
+  background: linear-gradient(to right, rgb(148 163 184), rgb(100 116 139));
+}
+
+/* Mini progress bars */
+.mini-progress-container {
+  position: relative;
+  height: 2px;
+  background-color: rgb(241 245 249);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.dark .mini-progress-container {
+  background-color: rgba(51, 65, 85, 0.5);
+}
+
+.mini-progress-bar {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: var(--progress);
+  background-color: rgb(99 102 241);
+  border-radius: 999px;
+  transition: width 0.5s ease-in-out;
+}
+
+.dark .mini-progress-bar {
+  background-color: rgb(129 140 248);
+}
+
+@keyframes shine {
+  0% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shine {
+  background-size: 200% auto;
+  animation: shine 3s linear infinite;
+}
