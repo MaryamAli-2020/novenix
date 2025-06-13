@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Save, MessageCircle, Plus, FileText, Edit, Trash2, Check, X } from 'lucide-react';
+import { Save, MessageCircle, Plus, FileText, Edit, Trash2 } from 'lucide-react';
 import { useStory } from '../context/StoryContext';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
@@ -29,19 +29,10 @@ interface Feedback {
   updatedAt?: Date;
 }
 
-interface RevisionPlanning {
-  strategy: string;
-  round: string;
-  completion: string;
-  lastUpdated: Date;
-}
-
 interface FeedbackDraftingProps {
   onNext: () => void;
   onPrev: () => void;
 }
-
-const uuid = () => Math.random().toString(36).slice(2, 10);
 
 const FeedbackDrafting: React.FC<FeedbackDraftingProps> = ({ onNext, onPrev }) => {
   const { state, dispatch } = useStory();
@@ -209,13 +200,38 @@ const FeedbackDrafting: React.FC<FeedbackDraftingProps> = ({ onNext, onPrev }) =
     const target = e.target;
     const { name, value } = target;
     const checked = target.type === 'checkbox' ? (target as HTMLInputElement).checked : undefined;
-    setFeedbackForm(f => ({ ...f, [name]: target.type === 'checkbox' ? checked : value }));
-    const data = {
-      drafts,
-      feedback,
-      revisionPlanning
+    
+    // Update form state
+    const newFormState = { 
+      ...feedbackForm, 
+      [name]: target.type === 'checkbox' ? checked : value 
     };
-    debouncedSaveProgress(data);
+    setFeedbackForm(newFormState);
+
+    // If we're editing an existing feedback (not creating new)
+    if (editingFeedbackId && editingFeedbackId !== 'new') {
+      // Create updated feedback item
+      const updatedFeedbackItem: Feedback = {
+        id: editingFeedbackId,
+        source: newFormState.source,
+        date: newFormState.date,
+        content: newFormState.content,
+        related: newFormState.related,
+        section: newFormState.section,
+        addressed: newFormState.addressed,
+        createdAt: feedback.find(f => f.id === editingFeedbackId)?.createdAt || new Date(),
+        updatedAt: new Date()
+      };
+
+      // Update the feedback array
+      const updatedFeedback = feedback.map(f => 
+        f.id === editingFeedbackId ? updatedFeedbackItem : f
+      );
+
+      // Update state and save
+      dispatch({ type: 'UPDATE_FEEDBACK', payload: updatedFeedback });
+      debouncedSaveProgress({ feedback: updatedFeedback });
+    }
   };
 
   // Handle save feedback
@@ -311,46 +327,43 @@ const FeedbackDrafting: React.FC<FeedbackDraftingProps> = ({ onNext, onPrev }) =
     debouncedSaveProgress(data);
   };
 
-  // Handle revision planning change
-  const handleRevisionPlanningChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    const newPlanning = { ...revisionPlanning, [name]: value, lastUpdated: new Date() };
-    dispatch({ type: 'UPDATE_REVISION_PLANNING', payload: newPlanning });
-    const data = {
-      drafts,
-      feedback,
-      revisionPlanning: newPlanning
-    };
-    debouncedSaveProgress(data);
-  };
-
-  // Handle toggle feedback addressed
-  const handleToggleFeedbackAddressed = (id: string) => {
-    const updatedFeedback = feedback.map(f => {
-      if (f.id === id) {
-        return { ...f, addressed: !f.addressed, updatedAt: new Date() };
-      }
-      return f;
-    });
-    dispatch({ type: 'UPDATE_FEEDBACK', payload: updatedFeedback });
-    const data = {
-      drafts,
-      feedback: updatedFeedback,
-      revisionPlanning
-    };
-    debouncedSaveProgress(data);
-  };
-
-  // Handle delete feedback
+  // Delete feedback handler
   const handleDeleteFeedback = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this feedback?')) {
-      const updatedFeedback = feedback.filter(f => f.id !== id);
-      dispatch({ type: 'UPDATE_FEEDBACK', payload: updatedFeedback });
+    try {
+      if (!window.confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) {
+        return;
+      }
+
+      const newFeedback = feedback.filter(f => f.id !== id);
+      
+      // Update local state
+      dispatch({ type: 'UPDATE_FEEDBACK', payload: newFeedback });
+      
+      // Save to backend with immediate save (not debounced) and show alert
       await saveProgress({
-        drafts,
-        feedback: updatedFeedback,
-        revisionPlanning
+        feedback: newFeedback
+      }, true); // true for immediate save and show alert
+      
+    } catch (err) {
+      console.error('Error deleting feedback:', err);
+      dispatch({ type: 'UPDATE_SAVE_STATUS', payload: 'error' });
+      alert('Failed to delete feedback. Please try again.');
+    }
+  };
+
+  // Handle edit feedback
+  const handleEditFeedback = (id: string) => {
+    const feedbackItem = feedback.find(f => f.id === id);
+    if (feedbackItem) {
+      setFeedbackForm({
+        source: feedbackItem.source,
+        date: feedbackItem.date,
+        content: feedbackItem.content,
+        related: feedbackItem.related || '',
+        section: feedbackItem.section || '',
+        addressed: feedbackItem.addressed
       });
+      setEditingFeedbackId(id);
     }
   };
 
@@ -491,7 +504,7 @@ const FeedbackDrafting: React.FC<FeedbackDraftingProps> = ({ onNext, onPrev }) =
             </div>
 
             <div className="space-y-3">
-              {feedback.map(fb => (
+              {feedback.map(fb => editingFeedbackId !== fb.id && (
                 <div key={fb.id} className="p-3 border border-slate-200 rounded-lg">
                   <div className="flex justify-between items-start">
                     <div className="flex items-start">
@@ -505,8 +518,28 @@ const FeedbackDrafting: React.FC<FeedbackDraftingProps> = ({ onNext, onPrev }) =
                         <p className="text-xs text-slate-500 mt-1">Received: {fb.date}</p>
                       </div>
                     </div>
-                    <div>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${fb.addressed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{fb.addressed ? 'Addressed' : 'Not Addressed'}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${fb.addressed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {fb.addressed ? 'Addressed' : 'Not Addressed'}
+                      </span>                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={<Edit size={16} />}
+                        onClick={() => handleEditFeedback(fb.id)}
+                        title="Edit feedback"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        color="red"
+                        icon={<Trash2 size={16} />}
+                        onClick={() => handleDeleteFeedback(fb.id)}
+                        title="Delete feedback"
+                      >
+                        Delete
+                      </Button>
                     </div>
                   </div>
                   <div className="mt-3 pt-2 border-t border-slate-100">
@@ -515,7 +548,7 @@ const FeedbackDrafting: React.FC<FeedbackDraftingProps> = ({ onNext, onPrev }) =
                 </div>
               ))}
 
-              {editingFeedbackId === 'new' && (
+              {(editingFeedbackId === 'new' || feedback.some(f => f.id === editingFeedbackId)) && (
                 <div className="p-3 border border-slate-200 rounded-lg">
                   <div className="flex justify-between items-start">
                     <div className="flex items-start">

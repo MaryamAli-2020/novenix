@@ -270,9 +270,7 @@ const NarrationPOV: React.FC<NarrationPOVProps> = ({ onNext, onPrev }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                POV Character(s)
-              </label>
+              
               <label id="pov-characters-label" htmlFor="pov-characters" className="block text-sm font-medium text-slate-700 mb-1">
                 POV Character(s)
               </label>

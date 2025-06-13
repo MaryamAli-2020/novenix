@@ -384,6 +384,7 @@ const Worldbuilding: React.FC<WorldbuildingProps> = ({ onNext, onPrev }) => {
                 rows={3}
                 placeholder="Describe the technology level or magic system in your world"
                 value={technologyLevel}
+                name="technologyLevel"
                 onChange={handleInputChange}
               ></textarea>
             </div>
@@ -397,6 +398,7 @@ const Worldbuilding: React.FC<WorldbuildingProps> = ({ onNext, onPrev }) => {
                 rows={5}
                 placeholder="Write a general description of your world and its key features"
                 value={worldDescription}
+                name="worldDescription"
                 onChange={handleInputChange}
               ></textarea>
             </div>
@@ -576,6 +578,7 @@ const Worldbuilding: React.FC<WorldbuildingProps> = ({ onNext, onPrev }) => {
                 className="block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="What languages are spoken in your world?"
                 value={languages}
+                name="languages"
                 onChange={handleInputChange}
               />
             </div>
@@ -588,6 +591,7 @@ const Worldbuilding: React.FC<WorldbuildingProps> = ({ onNext, onPrev }) => {
                 rows={3}
                 placeholder="Describe the religious or belief systems in your world"
                 value={religion}
+                name="religion"
                 onChange={handleInputChange}
               ></textarea>
             </div>
@@ -600,6 +604,7 @@ const Worldbuilding: React.FC<WorldbuildingProps> = ({ onNext, onPrev }) => {
                 rows={3}
                 placeholder="Describe important customs, holidays, or social norms"
                 value={customs}
+                name="customs"
                 onChange={handleInputChange}
               ></textarea>
             </div>
@@ -617,6 +622,7 @@ const Worldbuilding: React.FC<WorldbuildingProps> = ({ onNext, onPrev }) => {
                 rows={4}
                 placeholder="List major events that shaped your world's history"
                 value={historicalEvents}
+                name="historicalEvents"
                 onChange={handleInputChange}
               ></textarea>
             </div>
@@ -629,6 +635,7 @@ const Worldbuilding: React.FC<WorldbuildingProps> = ({ onNext, onPrev }) => {
                 rows={3}
                 placeholder="Describe important myths, legends, or folk tales from your world"
                 value={myths}
+                name="myths"
                 onChange={handleInputChange}
               ></textarea>
             </div>
